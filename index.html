@@ -1,21 +1,385 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Interactive Quiz for Defendant Program Eligibility"
-    />
-    <title>Defendant Quiz</title>
-    <link href="style.css" rel="stylesheet">
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script src="main.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCAO Interactive Quiz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f3f4f6;
+        }
+        .quiz-container {
+            padding: 1.5rem;
+            max-width: 48rem;
+            margin: 0 auto;
+            text-align: center;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            white-space: pre-line;
+            color: #1f2937;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .option-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .option-button:hover {
+            background-color: #1d4ed8;
+        }
+        .red-button {
+            background-color: #dc2626;
+        }
+        .red-button:hover {
+            background-color: #b91c1c;
+        }
+        .warning-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            text-align: left;
+        }
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: left;
+            color: #374151;
+        }
+        .continue-button {
+            margin-top: 1rem;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .continue-button:hover {
+            background-color: #1d4ed8;
+        }
+        .result {
+            margin-top: 1.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #047857;
+        }
+        .link-button {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container" id="quiz-container">
+        <!-- Quiz content will be dynamically inserted here -->
+    </div>
+
+    <script>
+        // Quiz questions and logic
+        const questions = [
+            {
+                id: "welcome",
+                text: "PCAO Interactive Quiz\n\n\n\n\n\n\nCreator: Aravind Balaji\n\nLegal Intern\n\nPolk County Attorney's Office",
+                next: "polkCounty"
+            },
+            {
+                id: "polkCounty",
+                text: "Have at least one of your cases been filed in Polk County, Iowa?",
+                options: [
+                    { label: "Yes", next: "fineAmount" },
+                    { label: "No", result: '<a href="https://www.iowacourts.gov/iowa-courts/court-directory" class="link-button" target="_blank" rel="noopener noreferrer">Go to Iowa Court Directory</a>' }
+                ]
+            },
+            {
+                id: "fineAmount",
+                text: "How much do you need to pay in fines?",
+                options: [
+                    { label: "Less than $300", result: "You are not eligible for either one of our programs. For assistance, call (515) 286-3077." },
+                    { label: "$300 or more", next: "issues" }
+                ]
+            },
+            {
+                id: "issues",
+                text: "Select all that apply:",
+                checkboxes: [
+                    "I owe court fines",
+                    "I am on probation/parole",
+                    "My vehicle registration is on hold",
+                    "My drivers license is suspended"
+                ],
+                next: "issueFollowup"
+            },
+            {
+                id: "issueFollowup",
+                text: "Please click continue to determine eligibility based on your selections.",
+                evaluate: (answers) => {
+                    const issues = answers["issues"] || [];
+                    const hasLicense = issues.includes("My drivers license is suspended");
+                    const hasProbation = issues.includes("I am on probation/parole");
+                    const hasOtherIssues = issues.some(issue => [
+                        "I owe court fines",
+                        "I am on probation/parole",
+                        "My vehicle registration is on hold"
+                    ].includes(issue));
+
+                    if (hasLicense && hasProbation) return "licenseIntent";
+                    if (hasLicense) return "licenseCheck";
+                    if (hasOtherIssues) return "thirtyOneDays";
+                    return "noEligibility";
+                }
+            },
+            {
+                id: "thirtyOneDays",
+                text: "Has it been more than 31 days since your sentencing hearing?",
+                options: [
+                    { label: "No", result: "You must wait 31 days to proceed. For assistance, call (515) 286-3077." },
+                    { label: "Yes", result: '<a href="https://attorneycollections.polkcountyiowa.gov/Home/WageAssignment" class="link-button" target="_blank" rel="noopener noreferrer">Go to Payment Plan</a>' }
+                ]
+            },
+            {
+                id: "licenseCheck",
+                text: "Has it been more than 60 days since your sentencing date?",
+                options: [
+                    { label: "No", result: "You are not eligible. For assistance, call (515) 286-3077." },
+                    { label: "Yes", next: "specialLicense" }
+                ]
+            },
+            {
+                id: "licenseIntent",
+                text: "What do you want to do?",
+                options: [
+                    { label: "Fulfill probation/parole requirements", next: "thirtyOneDays" },
+                    { label: "Receive my license only", next: "sixtyDays", className: "red-button" }
+                ],
+                warning: "⚠️ You can only have one plan open at a time. Starting a license plan may prevent you from fulfilling other obligations."
+            },
+            {
+                id: "sixtyDays",
+                text: "Has it been more than 60 days since your sentencing hearing?",
+                options: [
+                    { label: "Yes", next: "specialLicense" },
+                    { label: "No", result: "You are not eligible. For assistance, call (515) 286-3077." }
+                ]
+            },
+            {
+                id: "specialLicense",
+                text: "Are you seeking a special license for driving to work/school?",
+                options: [
+                    { label: "Yes", result: '<a href="https://iowadot.gov/mvd/driverslicense/TRL" class="link-button" target="_blank" rel="noopener noreferrer">Go to Temporary Restricted License Page</a>' },
+                    { label: "No", next: "outOfState" }
+                ]
+            },
+            {
+                id: "outOfState",
+                text: "Are there any out-of-state fines holding up the license?",
+                options: [
+                    { label: "Yes", result: "You do not qualify. For assistance, call (515) 286-3077." },
+                    { label: "No", result: '<a href="https://attorneycollections.polkcountyiowa.gov/Home/LRP" class="link-button" target="_blank" rel="noopener noreferrer">Go to LRP</a>' }
+                ]
+            },
+            {
+                id: "noEligibility",
+                text: "You are not eligible for either one of our programs. For help, call (515) 286-3077."
+            },
+            {
+                id: "resultDisplay",
+                text: ""
+            }
+        ];
+
+        // State management
+        let currentStep = "welcome";
+        let answers = {};
+
+        // Initialize the quiz
+        document.addEventListener('DOMContentLoaded', renderCurrentStep);
+
+        // Render the current step
+        function renderCurrentStep() {
+            const container = document.getElementById('quiz-container');
+            const current = questions.find(q => q.id === currentStep);
+            
+            // Clear previous content
+            container.innerHTML = '';
+            
+            // Question text
+            const questionText = document.createElement('div');
+            questionText.className = 'question-text';
+            questionText.textContent = current.text;
+            container.appendChild(questionText);
+            
+            // Options (if any)
+            if (current.options) {
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options-container';
+                
+                current.options.forEach((opt, idx) => {
+                    const button = document.createElement('button');
+                    button.className = opt.className ? `option-button ${opt.className}` : 'option-button';
+                    button.textContent = opt.label;
+                    button.onclick = () => handleOptionClick(opt);
+                    optionsContainer.appendChild(button);
+                });
+                
+                container.appendChild(optionsContainer);
+            }
+            
+            // Warning (if any)
+            if (current.warning) {
+                const warning = document.createElement('div');
+                warning.className = 'warning-box';
+                warning.innerHTML = `
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        style="min-width: 24px;"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 9v2.25m0 4.5h.007v.008H12v-.008zm.007-10.5a9 9 0 11-9 9 9 9 0 019-9z"
+                        />
+                    </svg>
+                    <span>${current.warning}</span>
+                `;
+                container.appendChild(warning);
+            }
+            
+            // Checkboxes (if any)
+            if (current.checkboxes) {
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'checkbox-container';
+                
+                current.checkboxes.forEach((cb, idx) => {
+                    const label = document.createElement('label');
+                    label.className = 'checkbox-label';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.onchange = (e) => handleCheckboxChange(cb, e.target.checked);
+                    
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(cb));
+                    checkboxContainer.appendChild(label);
+                });
+                
+                const continueWrapper = document.createElement('div');
+                continueWrapper.className = 'w-full text-center';
+                
+                const continueButton = document.createElement('button');
+                continueButton.className = 'continue-button';
+                continueButton.textContent = 'Continue';
+                continueButton.onclick = handleContinue;
+                
+                continueWrapper.appendChild(continueButton);
+                checkboxContainer.appendChild(continueWrapper);
+                container.appendChild(checkboxContainer);
+            }
+            
+            // Continue button (if needed)
+            if (!current.options && !current.checkboxes) {
+                const continueButton = document.createElement('button');
+                continueButton.className = 'continue-button';
+                continueButton.textContent = 'Continue';
+                continueButton.onclick = handleContinue;
+                container.appendChild(continueButton);
+            }
+            
+            // Result (if on result screen)
+            if (currentStep === "resultDisplay" && answers.result) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = answers.result;
+                container.appendChild(resultDiv);
+            }
+        }
+
+        // Handle option click
+        function handleOptionClick(option) {
+            if (option.result) {
+                answers.result = typeof option.result === 'function' ? option.result() : option.result;
+                currentStep = "resultDisplay";
+            } else {
+                currentStep = option.next;
+            }
+            renderCurrentStep();
+        }
+
+        // Handle checkbox change
+        function handleCheckboxChange(checkbox, checked) {
+            if (!answers.issues) {
+                answers.issues = [];
+            }
+            
+            if (checked && !answers.issues.includes(checkbox)) {
+                answers.issues.push(checkbox);
+            } else if (!checked && answers.issues.includes(checkbox)) {
+                answers.issues = answers.issues.filter(item => item !== checkbox);
+            }
+        }
+
+        // Handle continue button
+        function handleContinue() {
+            const current = questions.find(q => q.id === currentStep);
+            
+            if (typeof current.evaluate === "function") {
+                const next = current.evaluate(answers);
+                if (next === "noEligibility") {
+                    answers.result = "You are not eligible for either one of our programs. For help, call (515) 286-3077.";
+                    currentStep = "resultDisplay";
+                } else {
+                    currentStep = next;
+                }
+            } else if (current.next) {
+                currentStep = current.next;
+            }
+            
+            renderCurrentStep();
+        }
+    </script>
+</body>
 </html>
