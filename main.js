@@ -1,0 +1,1 @@
+document.getElementById('root').innerText = 'Welcome to the Defendant Quiz! (React app would render here)';
