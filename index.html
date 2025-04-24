@@ -184,7 +184,7 @@
             },
             {
                 id: "thirtyOneDays",
-                text: "Has it been more than 31 days since your sentencing hearing?",
+                text: "Has it been more than 31 days since your sentencing hearing or 31 days since you have recieved the ticket?",
                 options: [
                     { label: "No", result: "You must wait 31 days to proceed. For assistance, call (515) 286-3077." },
                     { label: "Yes", result: '<a href="https://attorneycollections.polkcountyiowa.gov/Home/WageAssignment" class="link-button" target="_blank" rel="noopener noreferrer">Go to Payment Plan</a>' }
@@ -192,7 +192,7 @@
             },
             {
                 id: "licenseCheck",
-                text: "Has it been more than 60 days since your sentencing date?",
+                text: "Has it been more than 60 days since your sentencing date or since you received the ticket?",
                 options: [
                     { label: "No", result: "You are not eligible. For assistance, call (515) 286-3077." },
                     { label: "Yes", next: "specialLicense" }
@@ -209,10 +209,10 @@
             },
             {
                 id: "sixtyDays",
-                text: "Has it been more than 60 days since your sentencing hearing?",
+                text: "Has it been more than 60 days since your sentencing hearing or since you recieved the ticket?",
                 options: [
                     { label: "Yes", next: "specialLicense" },
-                    { label: "No", result: "You are not eligible. For assistance, call (515) 286-3077." }
+                    { label: "No", result: "You are not eligible for our programs. For assistance, call (515) 286-3077." }
                 ]
             },
             {
