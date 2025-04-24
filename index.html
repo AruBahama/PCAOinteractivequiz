@@ -9,7 +9,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f3f4f6;
+            background-color: #fffbf6;
         }
         .quiz-container {
             padding: 1.5rem;
@@ -150,7 +150,7 @@
             },
             {
                 id: "issueFollowup",
-                text: "Please click continue to determine eligibility based on your selections.",
+                text: "Please click continue for further steps!",
                 evaluate: (answers) => {
                     const issues = answers["issues"] || [];
                     const hasLicense = issues.includes("My drivers license is suspended");
@@ -190,7 +190,7 @@
                     { label: "Fulfill probation/parole requirements", next: "thirtyOneDays" },
                     { label: "Receive my license only", next: "sixtyDays", className: "red-button" }
                 ],
-                warning: "⚠️ You can only have one plan open at a time. Starting a license plan may prevent you from fulfilling other obligations."
+                warning: "Warning⚠️: You can only have one plan open at a time. Starting an LRP would lead to you not fulfilling requiremnts for parole/probation!"
             },
             {
                 id: "sixtyDays",
